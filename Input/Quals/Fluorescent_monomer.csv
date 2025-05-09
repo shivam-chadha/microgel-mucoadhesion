@@ -1,0 +1,15 @@
+Measurement Type,Sample Name,Measurement Start Date And Time,Peak 1 Mean by Intensity ordered by area (nm),Peak 2 Mean by Intensity ordered by area (nm),Z-Average (nm),Polydispersity Index (PI),Zeta Potential (mV),Zeta Deviation (mV),Total Number Concentration (particles/ml),Attenuator
+Zeta,C100-0,2024-06-25 12:59:39 PM,,,,,-3.106,3.549,,3
+Zeta,C100-0 resonicated,2024-06-25 1:17:47 PM,,,,,-9.8,11.47,,6
+Zeta,C100-0.1,2024-06-25 1:39:50 PM,,,,,10.65,8.985,,6
+Zeta,C100-0.5,2024-06-25 1:51:40 PM,,,,,-9.323,3.672,,4
+Zeta,C100-0.5 resonicated,2024-06-25 2:59:58 PM,,,,,-9.936,4.677,,4
+Zeta,C100-1,2024-06-25 3:40:51 PM,,,,,-9.011,3.353,,3
+Zeta,C100-1,2024-06-25 3:42:39 PM,,,,,-9.708,6.403,,3
+Zeta,C100-1,2024-06-25 3:44:27 PM,,,,,-8.97,4.062,,3
+Zeta,C100-5,2024-06-25 4:03:56 PM,,,,,-1.377,3.804,,3
+Zeta,C100-5,2024-06-25 4:11:25 PM,,,,,-2.217,4.197,,3
+Zeta,C100-5,2024-06-25 4:18:55 PM,,,,,-0.8236,5.4,,3
+Zeta,C100-5 resonicated,2024-06-25 4:36:05 PM,,,,,-8.813,5.389,,4
+Zeta,C100-5 resonicated,2024-06-25 4:37:53 PM,,,,,-8.111,4.987,,4
+Zeta,C100-5 resonicated,2024-06-25 4:39:41 PM,,,,,-9.71,6.544,,4

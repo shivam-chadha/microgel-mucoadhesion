@@ -1,0 +1,363 @@
+---
+title: "Quals_figures"
+author: "Shivam"
+date: "09-Sep-2024"
+output: html_document
+---
+
+```{r libraries, include=FALSE}
+library("ggplot2")
+library("ggpubr")
+library("here")
+library("tidyverse")
+```
+
+## Purpose
+
+Create plots for the Qualifying Exam/Thesis Proposal. 
+
+```{r load_data}
+zeta <- read.csv(here("Input","Quals","Zetas.csv"), header = T)
+muc <- read.csv(here("Input","Quals","Muc.csv"), header = T)
+trf <- read.csv(here("Input","Quals","Trf.csv"), header = T)
+```
+
+## Zeta potentials
+
+```{r zetas, echo=FALSE}
+zeta$BaseMonomer <- factor(zeta$BaseMonomer, 
+                           levels = c("NIPAm",
+                                      "DMAm",
+                                      "MORPH",
+                                      "HEAm",
+                                      "AMPS",
+                                      "APTAC"))
+zeta$CoMonomer <- factor(zeta$CoMonomer, 
+                         levels = c("Homopolymer",
+                                    "25% AMPS",
+                                    "50% AMPS",
+                                    "75% AMPS",
+                                    "100% AMPS",
+                                    "25% APTAC",
+                                    "50% APTAC",
+                                    "75% APTAC",
+                                    "100% APTAC"))
+
+#split into 2 data frames
+amps <- zeta[which(zeta$CoMonomer == "Homopolymer"|
+                     zeta$CoMonomer == "100% AMPS"|
+                     zeta$CoMonomer == "75% AMPS"|
+                     zeta$CoMonomer == "50% AMPS"|
+                     zeta$CoMonomer == "25% AMPS")
+             ,]
+
+aptac <- zeta[which(zeta$CoMonomer == "Homopolymer"|
+                      zeta$CoMonomer == "100% APTAC"|
+                      zeta$CoMonomer == "75% APTAC"|
+                      zeta$CoMonomer == "50% APTAC"|
+                      zeta$CoMonomer == "25% APTAC")
+              ,]
+
+#set 100% base monomer as 0% charged monomer
+amps$CoMonomer <- sub("Homopolymer", "0% AMPS", amps$CoMonomer)
+aptac$CoMonomer <- sub("Homopolymer", "0% APTAC", aptac$CoMonomer)
+
+#fix factor levels for charged monomer content
+amps$CoMonomer <- factor(amps$CoMonomer, 
+                         levels = c("0% AMPS",
+                                    "25% AMPS",
+                                    "50% AMPS",
+                                    "75% AMPS",
+                                    "100% AMPS"))
+aptac$CoMonomer <- factor(aptac$CoMonomer, 
+                         levels = c("0% APTAC",
+                                    "25% APTAC",
+                                    "50% APTAC",
+                                    "75% APTAC",
+                                    "100% APTAC"))
+
+#amps graph
+amps.bar <- ggplot(amps, aes(x=CoMonomer,
+                             y=Zeta,
+                            group=CoMonomer,
+                            fill=CoMonomer))+
+  geom_col(position ="dodge")+
+  facet_wrap(vars(BaseMonomer), nrow=1)+
+  geom_errorbar(aes(ymin=Zeta-SE, 
+                    ymax=Zeta+SE),
+                width=0.2,
+                position=position_dodge(1))+
+  theme_classic()+
+  scale_fill_manual(values=c("#f4bb44",
+                             "#00abea",
+                             "#034eee",
+                             "#000bec",
+                             "#1a068c"))+
+  ylab("\u03b6-Potential (mV)")+
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.title = element_blank(),
+        legend.key.size = unit(4, "mm"),
+        panel.grid = element_blank(),
+        aspect.ratio = 1)
+
+#aptac graph
+aptac.bar <- ggplot(aptac, aes(x=CoMonomer,
+                               y=Zeta,
+                         group=CoMonomer,
+                         fill=CoMonomer))+
+  geom_col(position ="dodge")+
+  facet_wrap(vars(BaseMonomer), nrow=1)+
+  geom_errorbar(aes(ymin=Zeta-SE, 
+                    ymax=Zeta+SE),
+                width=0.2,
+                position=position_dodge(1))+
+  theme_classic()+
+  scale_fill_manual(values=c("#f4bb44",
+                             "#ff3d3d",
+                             "#e12c29",
+                             "#c41a15",
+                             "#a80000"))+
+  ylab("\u03b6-Potential (mV)")+
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.title = element_blank(),
+        legend.key.size = unit(4, "mm"),
+        panel.grid = element_blank(),
+        aspect.ratio = 1)
+
+#add points for the bar graphs
+
+## combine plots
+zetas <- ggarrange(amps.bar,aptac.bar, nrow = 2)
+zetas <- annotate_figure(zetas, left = "\u03b6-Potential (mV)")
+
+```
+
+## Mucoadhesion
+
+```{r mucoadhesion, echo=FALSE}
+#Mucin plots
+muc$Group <- factor(substr(muc$Formulation, 1, 1), 
+                    levels = c("B", "A", 
+                               "D", "C", 
+                               "E", "F"), 
+                    labels = c("NIPAm", "DMAm",
+                               "MORPH","HEAm",
+                               "AMPS","APTAC"))
+muc.pos <- muc[which(muc$Zeta > 0),]
+muc.pos.plot <- ggplot(muc.pos, 
+                       aes(x=Zeta,
+                           y=Area_.))+
+  geom_point(aes(colour=Group),
+             size=2)+
+  theme_classic()+
+  labs(title = "Mucin",
+       x = "\u03b6-Potential (mV)", 
+       y = "Area (%)")+
+  theme(legend.title = element_blank(),
+        panel.grid = element_blank(),
+        aspect.ratio = 1)+
+  ylim(0,60)+
+  scale_color_manual(values = c("#fa604c",
+                                "#a2a173",
+                                "#50df5a",
+                                "#66ddc5",
+                                "#3d65f5",
+                                "#d141d7")|>
+                       `names<-`(c("NIPAm",
+                                   "DMAm",
+                                   "MORPH",
+                                   "HEAm",
+                                   "APTAC",
+                                   "AMPS"))) 
+
+muc.neg <- muc[which(muc$Zeta < 0),]
+muc.neg.plot <- ggplot(muc.neg, 
+                       aes(x=Zeta,
+                           y=Area_.))+
+  geom_point(aes(colour=Group),
+             size=2)+
+  theme_classic()+
+  labs(title = "Mucin",
+       x = "\u03b6-Potential (mV)", 
+       y = "Area (%)")+
+  theme(legend.title = element_blank(),
+        panel.grid = element_blank(),
+        aspect.ratio = 1)+
+  ylim(0,60)+
+  scale_color_manual(values = c("#fa604c",
+                                "#a2a173",
+                                "#50df5a",
+                                "#66ddc5",
+                                "#3d65f5",
+                                "#d141d7")|>
+                       `names<-`(c("NIPAm",
+                                   "DMAm",
+                                   "MORPH",
+                                   "HEAm",
+                                   "APTAC",
+                                   "AMPS")))
+#transferrin plots
+trf$Group <- factor(substr(trf$Formulation, 1, 1), 
+                    levels = c("B", "A", 
+                               "D", "C", 
+                               "E", "F"), 
+                    labels = c("NIPAm", "DMAm",
+                               "MORPH","HEAm",
+                               "AMPS","APTAC"))
+
+trf.pos <- trf[which(trf$Zeta > 0),]
+trf.pos.plot <- ggplot(trf.pos, 
+                       aes(x=Zeta,
+                           y=Area_.))+
+  geom_point(aes(colour=Group),
+             size=2)+
+  theme_classic()+
+  labs(title = "Transferrin",
+       x = "\u03b6-Potential (mV)", 
+       y = "Area (%)")+
+  theme(legend.title = element_blank(),
+        panel.grid = element_blank(),
+        aspect.ratio = 1)+
+  ylim(0,60)+
+  scale_color_manual(values = c("#fa604c",
+                                "#a2a173",
+                                "#50df5a",
+                                "#66ddc5",
+                                "#3d65f5",
+                                "#d141d7")|>
+                       `names<-`(c("NIPAm",
+                                   "DMAm",
+                                   "MORPH",
+                                   "HEAm",
+                                   "APTAC",
+                                   "AMPS")))
+
+trf.neg <- trf[which(trf$Zeta < 0),]
+trf.neg.plot <- ggplot(trf.neg, 
+                       aes(x=Zeta,
+                           y=Area_.))+
+  geom_point(aes(colour=Group),
+             size=2)+
+  theme_classic()+
+  labs(title = "Transferrin",
+       x = "\u03b6-Potential (mV)", 
+       y = "Area (%)")+
+  theme(legend.title = element_blank(),
+        panel.grid = element_blank(),
+        aspect.ratio = 1)+
+  ylim(0,60)+
+  scale_color_manual(values = c("#fa604c",
+                                "#a2a173",
+                                "#50df5a",
+                                "#66ddc5",
+                                "#3d65f5",
+                                "#d141d7")|>
+                       `names<-`(c("NIPAm",
+                                   "DMAm",
+                                   "MORPH",
+                                   "HEAm",
+                                   "APTAC",
+                                   "AMPS")))
+
+
+##Snapshot of Formulations of interest
+dat <- rbind(trf[c(10,30,21),c(1,3)],
+             muc[c(10,30,21),c(1,3)])
+dat$Group <- rep(c("Transferrin","Mucin"), 
+                 each=3)
+dat$Formulation <- factor(dat$Formulation, 
+                          levels = c("B50-E50",
+                                     "E100",
+                                     "C25-F75"))
+dat.bar <- ggplot(dat, aes(x=Formulation,
+                           y=Area_.,
+                           group=Group,
+                           fill=Group))+
+  geom_col(position ="dodge")+
+  theme_classic()+
+  scale_fill_manual(values=c("#fc0349","#fcdb03"))+
+  theme(legend.title = element_blank(),
+        panel.grid = element_blank(),
+        aspect.ratio = 1.5)+
+  ylab("Area (%)")+
+  ylim(0,60)+
+  scale_x_discrete(labels = c("A","B","C"))+
+  labs(title = " ")
+
+## combine plots
+adhesion <- ggarrange(ggarrange(muc.neg.plot,
+                                trf.neg.plot,
+                                muc.pos.plot, 
+                                trf.pos.plot,
+                                nrow = 1,
+                                common.legend = T,
+                                legend = "none"),
+                      dat.bar, 
+                      legend = "right",
+                      widths = c(1,0.354))
+```
+
+
+## Timeline
+
+```{r gantt_chart}
+#load data
+tmln <- read.csv(here("Timeline_Gantt-Chart.csv"), header = T)
+
+#format data
+tmln$Objective <- factor(tmln$Objective, levels = tmln$Objective)
+tmln$Start_Date <- as.Date(tmln$Start_Date)
+tmln$End_Date <- as.Date(tmln$End_Date)
+tmln$group <- as.factor(c("Objective 1", "Thesis",
+                          "Objective 1", "Objective 2",
+                          "Paper", "Objective 3",
+                          "Objective 3", "Paper",
+                          "Objective 4","Paper",
+                          "Thesis"))
+
+#make figure
+gantt <- ggplot(tmln)+
+  geom_linerange(aes(y = Objective,
+                     xmin = Start_index,
+                     xmax = End_index,
+                     colour = group),
+                 linewidth = I(5))+
+  theme_classic()+
+  labs(x = "Year",
+       y = "")+
+  scale_y_discrete(limits=rev)+
+  theme(legend.title = element_blank(),
+        legend.position = "top")+ 
+  guides(colour = guide_legend(nrow = 1))
+```
+
+## Appendix figures
+
+```{r lap+fa}
+#load data
+fa <- read.csv(here("Fluorescent_monomer.csv"), header = T)
+#lap <- read.csv(here("Fluorescent_monomer.csv"), header = T)
+
+#fix data
+fa$quant <- c(0,0,0.1,0.5,0.5,1,1,1,5,5,5,5,5,5)
+fa.clean <- fa[c(1,3,4,6,14),]
+
+fa.plot<- ggplot(fa.clean, aes(x=quant,
+                         y=Zeta.Potential..mV.))+
+  geom_col()
+
+```
+  
+## Save figures
+
+```{r save}
+ggsave(here("Output", "Quals", "zeta_bar1.jpeg"), zetas, height = 2, width = 5, units = "in")
+
+ggsave(here("Output", "Quals", "mucoadhesion_figs.jpeg"), adhesion, height = 3, width = 10, units = "in")
+
+ggsave(here("Output", "Quals", "timeline_chart.jpeg"), gantt, height = 3, width = 9, units = "in")
+```
